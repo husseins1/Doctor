@@ -27,12 +27,18 @@ export const userSlice = createSlice({
   reducers: {
     login:(state,{payload})=>{
       state.user=payload
-        
+
     },
     logout:(state,{payload})=>{
       state.user = null;
     },
     addBooks:(state,{payload})=>{
+      state.user.bookings=payload
+    },
+    removeBook:(state,{payload})=>{
+      state.user.bookings=state.user.bookings.filter(ele=>ele.code !== payload.code)
+    },
+    setBooksBack:(state,{payload})=>{
       state.user.bookings=payload
     }
 
@@ -42,7 +48,7 @@ export const userSlice = createSlice({
   
 });
 
-export const { login,logout,addBooks } = userSlice.actions;
+export const { login,logout,addBooks,removeBook,setBooksBack } = userSlice.actions;
 
 // The function below is called a selector and allows us to select a value from
 // the state. Selectors can also be defined inline where they're used instead of

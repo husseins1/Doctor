@@ -1,4 +1,4 @@
-import { Flex } from '@chakra-ui/layout'
+import { Box, Flex } from '@chakra-ui/layout'
 import React, { useEffect, useRef, useState } from 'react'
 import {
   Table,
@@ -16,11 +16,12 @@ import {
   AlertDialogHeader,
   AlertDialogContent,
   AlertDialogOverlay,
+  useToast
 } from "@chakra-ui/react";
 import { arrayRemove, collection, deleteField, doc,  FieldValue,  getDocs, updateDoc } from '@firebase/firestore';
 import { db } from '../firebase';
 import { useDispatch, useSelector } from 'react-redux';
-import { addBooks, selectUser } from '../features/user/userSlice';
+import { addBooks, removeBook, selectUser, setBooksBack } from '../features/user/userSlice';
 
 export default function Appointments() {
     const dispatch =useDispatch()
@@ -30,13 +31,29 @@ export default function Appointments() {
     const onClose = () => setIsOpen(false);
     const cancelRef = useRef();
     const [selectDate,setSelectDate] = useState()
-    
+    const toast = useToast()
     const deleteAppointmentHandler = async({id, time, code})=>{
         const ref=doc(db,"dates",id)
-        
-        await updateDoc(ref,{
-           times:arrayRemove({code,hour:time,id:user.uid}) 
-        })
+        let preBooks;
+        try {
+            preBooks = [...user.bookings]
+            dispatch(removeBook({code}))
+           await updateDoc(ref,{
+               times:arrayRemove({code,hour:time,id:user.uid}) 
+            })
+            
+            
+        } catch (error) {
+            dispatch(setBooksBack(preBooks))
+            toast({
+              position: "bottom-left",
+              render: () => (
+                <Box color="white" p={3} bg="red.500">
+                  {error.message} 
+                </Box>
+              ),
+            });
+        }
     }
     
     useEffect(()=>{
