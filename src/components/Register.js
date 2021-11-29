@@ -4,10 +4,11 @@ import { Input } from "@chakra-ui/input";
 import { Box, Flex } from "@chakra-ui/layout";
 import { useToast } from "@chakra-ui/toast";
 import { createUserWithEmailAndPassword, updateProfile } from "@firebase/auth";
+import { doc, setDoc } from "@firebase/firestore";
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { login } from "../features/user/userSlice";
-import { auth } from "../firebase";
+import { auth, db } from "../firebase";
 
 export default function Register() {
     const [email,setEmail] =useState("")
@@ -23,11 +24,18 @@ export default function Register() {
             }
             const {user} = await createUserWithEmailAndPassword(auth,email,password)
             await updateProfile(user,{displayName:name})
+            await setDoc(doc(db, "users", user.uid), {
+              email: user.email,
+              uid: user.uid,
+              displayName: name,
+              admin:false
+            });
             dispatch(
               login({
                 email: user.email,
                 uid: user.uid,
                 displayName: name,
+                admin:false
               })
             );
         }catch(err){

@@ -18,7 +18,7 @@ import {
   AlertDialogOverlay,
   useToast
 } from "@chakra-ui/react";
-import { arrayRemove, collection, deleteField, doc,  FieldValue,  getDocs, updateDoc } from '@firebase/firestore';
+import { arrayRemove, collection,  doc, getDocs, updateDoc } from '@firebase/firestore';
 import { db } from '../firebase';
 import { useDispatch, useSelector } from 'react-redux';
 import { addBooks, removeBook, selectUser, setBooksBack } from '../features/user/userSlice';
@@ -32,14 +32,15 @@ export default function Appointments() {
     const cancelRef = useRef();
     const [selectDate,setSelectDate] = useState()
     const toast = useToast()
-    const deleteAppointmentHandler = async({id, time, code})=>{
+    const deleteAppointmentHandler = async({id,userId, time, code,email,name})=>{
         const ref=doc(db,"dates",id)
         let preBooks;
         try {
             preBooks = [...user.bookings]
+            console.log({ code, email, hour: time, id:userId, name });
             dispatch(removeBook({code}))
            await updateDoc(ref,{
-               times:arrayRemove({code,hour:time,id:user.uid}) 
+               times:arrayRemove({code,email,hour:time,id:userId,name}) 
             })
             
             
@@ -63,19 +64,42 @@ export default function Appointments() {
                 
             const datesData = await getDocs(collection(db,"dates"))
             datesData.forEach(ele=>{
-                
+                console.log(ele);
                 ele.data().times.forEach(time=>{
                     
-                    if(time.id ===user?.uid){
-                        arr.push({id:ele.id,time:time.hour,code:time.code});
+                    if(time.id === user?.uid){
+                        arr.push({
+                          userId: time.id,
+                          id: ele.id,
+                          time: time.hour,
+                          code: time.code,
+                          email: time.email,
+                          name: time.name,
+                        })
+                    }else if(user?.admin){
+                        arr.push({
+                          userId: time.id,
+                          id: ele.id,
+                          time: time.hour,
+                          code: time.code,
+                          email: time.email,
+                          name: time.name,
+                        });
                     }
                 })
             })
+            if(!user) return;
             dispatch(addBooks(arr))
           
             
         })()
     },[user?.uid])
+    const renderAdminItems=(ele)=>( 
+        <React.Fragment>
+            
+        <Td>{ele?.name||"Name"}</Td>
+         <Td>{ele?.email||"Email"}</Td>
+         </React.Fragment>)
 
     return (
       <React.Fragment>
@@ -92,6 +116,10 @@ export default function Appointments() {
                 <Th>Date</Th>
                 <Th>Time</Th>
                 <Th>code</Th>
+                {user?.admin?(<React.Fragment>
+                    <Th>Name</Th>
+                    <Th>Email</Th>
+                </React.Fragment>):false}
                 <Th>Delete</Th>
               </Tr>
             </Thead>
@@ -101,11 +129,13 @@ export default function Appointments() {
                   <Td>{ele.id}</Td>
                   <Td>{ele.time}:00</Td>
                   <Td>{ele.code}</Td>
+                  {user?.admin?renderAdminItems(ele):false}
                   <Td>
                     <Button
                       onClick={() => {
                         setIsOpen(true);
                         setSelectDate(ele);
+                       
                       }}
                       colorScheme="red"
                     >

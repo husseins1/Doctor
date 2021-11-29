@@ -74,7 +74,7 @@ export default function Book() {
       console.log(myRef.current.value);
       if(!(option && myRef))return;
       updateDoc(doc(db, "dates", myRef.current.value), {
-        times: arrayUnion({ hour: Number(option), id: user.uid,code:makeid(6) }),
+        times: arrayUnion({ hour: Number(option), id: user.uid,code:makeid(6),email:user.email,name:user.displayName }),
       });
       setDate("")
       setOptions([])
