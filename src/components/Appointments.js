@@ -110,7 +110,7 @@ export default function Appointments() {
           flexDirection="column"
         >
           <Table variant="striped">
-            <TableCaption>Imperial to metric conversion factors</TableCaption>
+            
             <Thead>
               <Tr>
                 <Th>Date</Th>
@@ -145,13 +145,7 @@ export default function Appointments() {
                 </Tr>
               ))}
             </Tbody>
-            <Tfoot>
-              <Tr>
-                <Th>To convert</Th>
-                <Th>into</Th>
-                <Th isNumeric>multiply by</Th>
-              </Tr>
-            </Tfoot>
+            
           </Table>
         </Flex>
         <AlertDialog

@@ -38,6 +38,7 @@ export default function Register() {
                 admin:false
               })
             );
+            window.location="/"
         }catch(err){
             toast({
               position: "bottom-left",
